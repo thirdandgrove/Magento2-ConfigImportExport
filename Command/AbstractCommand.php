@@ -91,7 +91,12 @@ abstract class AbstractCommand extends Command
         $this->input = $input;
         $this->output = $output;
 
-        $this->appState->setAreaCode('adminhtml');
+        try {
+            $this->appState->getAreaCode();
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+            $this->appState->setAreaCode('adminhtml');
+        }
+
         $this->objectManager->configure($this->configLoader->load('adminhtml'));
         $this->registry->register('isSecureArea', true);
     }
