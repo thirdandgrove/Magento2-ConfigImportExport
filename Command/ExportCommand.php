@@ -72,6 +72,7 @@ class ExportCommand extends AbstractCommand
         $this->addOption('format', 'm', InputOption::VALUE_OPTIONAL, 'Format: yaml, json', 'yaml');
         $this->addOption('hierarchical', 'a', InputOption::VALUE_OPTIONAL, 'Create a hierarchical or a flat structure (not all export format supports that). Enable with: y', 'n');
         $this->addOption('filename', 'f', InputOption::VALUE_OPTIONAL, 'File name into which should the export be written. Defaults into var directory.');
+        $this->addOption('directory', 'd', InputOption::VALUE_OPTIONAL, 'Directory to export config data (default to Magento var)');
         $this->addOption('include', 'i', InputOption::VALUE_OPTIONAL, 'Path prefix, multiple values can be comma separated; exports only those paths');
         $this->addOption('includeScope', null, InputOption::VALUE_OPTIONAL, 'Scope name, multiple values can be comma separated; exports only those scopes');
         $this->addOption('exclude', 'x', InputOption::VALUE_OPTIONAL, 'Path prefix, multiple values can be comma separated; exports everything except ...');
@@ -104,6 +105,18 @@ class ExportCommand extends AbstractCommand
         $filename = (string)$input->getOption('filename');
         if ($filename != '') {
             $writer->setBaseFilename($filename);
+        }
+
+        $directory = (string) $input->getOption('directory');
+        if (strlen($directory)) {
+            if (!is_dir($directory)) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Output directory %s does not exists or is not writable',
+                    $directory
+                ));
+            }
+
+            $writer->setBaseDirectory($directory);
         }
 
         $writer->setOutput($output);

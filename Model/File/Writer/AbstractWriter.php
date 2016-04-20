@@ -21,6 +21,11 @@ abstract class AbstractWriter implements WriterInterface
     private $baseFilename = null;
 
     /**
+     * @var string
+     */
+    private $baseDirectory = null;
+
+    /**
      * @var bool
      */
     private $isHierarchical = false;
@@ -72,18 +77,27 @@ abstract class AbstractWriter implements WriterInterface
             }
 
             foreach ($namespacedData as $namespace => $configData) {
-                $this->_write($this->getFilename($namespace), $configData);
+                $this->_write(
+                    $this->getFilename($namespace),
+                    $configData,
+                    $this->getBaseDirectory()
+                );
             }
         } else {
-            $this->_write($this->getFilename(), $preparedData);
+            $this->_write(
+                $this->getFilename(),
+                $preparedData,
+                $this->getBaseDirectory()
+            );
         }
     }
 
     /**
      * @param string $filename
      * @param array  $data
+     * @param string $directory
      */
-    abstract protected function _write($filename, array $data);
+    abstract protected function _write($filename, array $data, $dir = null);
 
     /**
      * @param array $exportData
@@ -126,6 +140,22 @@ abstract class AbstractWriter implements WriterInterface
     public function getFilesystem()
     {
         return $this->filesystem;
+    }
+
+    /**
+     * @param string $baseDirectory
+     */
+    public function setBaseDirectory($baseDirectory)
+    {
+        $this->baseDirectory = $baseDirectory;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBaseDirectory()
+    {
+        return $this->baseDirectory;
     }
 
     /**
@@ -204,14 +234,13 @@ abstract class AbstractWriter implements WriterInterface
      */
     public function getFilename($namespace = null)
     {
-        $filename = [
-            date('Ymd_His')
-        ];
+        $filename = [];
 
         // Check if the a base filename was given
         if ($baseFilename = $this->getBaseFilename()) {
             $filename[] = $baseFilename;
         } else {
+            $filename[] = date('Ymd_His');
             $filename[] = 'config';
         }
 
