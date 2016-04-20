@@ -18,19 +18,29 @@ class JsonWriter extends AbstractWriter
     /**
      * @param string $filename
      * @param array  $data
+     * @param string $directory
      */
-    protected function _write($filename, array $data)
+    protected function _write($filename, array $data, $dir = null)
     {
         // Prepare data
         $content = json_encode($data, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT);
 
         // Write data to file
-        $tmpDirectory = $this->getFilesystem()->getDirectoryWrite(DirectoryList::VAR_DIR);
-        $tmpDirectory->writeFile($filename, $content);
+        if (!is_null($dir)) {
+            $output = sprintf('%s/%s', $dir, $filename);
+            file_put_contents($output, $content);
+        } else {
+            $tmpDirectory = $this->getFilesystem()
+                ->getDirectoryWrite(DirectoryList::VAR_DIR);
+
+            $tmpDirectory->writeFile($filename, $content);
+            $output = $tmpDirectory->getAbsolutePath($filename);
+        }
+
         $this->getOutput()->writeln(sprintf(
             '<info>Wrote: %s settings to file %s</info>',
             count($data),
-            $tmpDirectory->getAbsolutePath($filename)
+            $output
         ));
     }
 
